@@ -1,117 +1,63 @@
 import argparse
+import random
+
 import numpy as np
 import pandas as pd
-import scipy as sp
-import preprocessing as preprocessing
-from sklearn import preprocessing
 
-graph = []
-similarity_matrix = None
+similarity_matrix = pd.DataFrame.empty
 
 
 def build_similarity_matrix():
-    print("build_similarity_matrix")
+    # Fake data for now
     global similarity_matrix
     similarity_matrix = pd.read_csv('fake_similarity_matrix.csv', index_col=0)
-    similarity_matrix = similarity_matrix.astype(float)
-    print(similarity_matrix)
+    similarity_matrix = similarity_matrix.div(similarity_matrix.sum(axis=1), axis=1)
 
 
 def build_graph(k=3):
-    print("build_graph k={}".format(k))
-    global graph
-
-    # iterate of columns
-    for (column_name, column_data) in similarity_matrix.iteritems():
-        column_data = column_data.sort_values(ascending=False)
-        column_data = column_data[1:k + 1]
-
-        # iterate over items in the column
-        for (item_index, item_value) in column_data.iteritems():
-            # add vertex from column_name to item_index
-            graph.append((column_name, item_index, item_value))
-    print(graph)
+    # Keep only k most similar gestures
+    global similarity_matrix
+    similarity_matrix = pd.DataFrame(
+        np.where(similarity_matrix.rank(axis=0, method='min', ascending=False) > k, 0, similarity_matrix),
+        columns=similarity_matrix.columns, index=similarity_matrix.index)
 
 
-def find_dominant_gestures(n=5, m=6):
-    print("find_dominant_gestures n={} m={}".format(n, m))
+def page_rank(matrix, num_iterations: int = 100, d: float = 0.85, n=3):
+    matrix_numpy = matrix.to_numpy()
 
+    # Get size of values
+    array_size = matrix_numpy.shape[0]
 
-def pagerank(M, num_iterations: int = 100, d: float = 0.85):
-    desired_nodes = [0, 3, 9]
-    M_numpy = M.to_numpy()
-    """PageRank: The trillion dollar algorithm.
+    # Initialize the personalization vector to 0s
+    personalize = np.zeros((array_size, 1))
 
-    Parameters
-    ----------
-    M : numpy array
-        adjacency matrix where M_i,j represents the link from 'j' to 'i', such that for all 'j'
-        sum(i, M_i,j) = 1
-    num_iterations : int, optional
-        number of iterations, by default 100
-    d : float, optional
-        damping factor, by default 0.85
+    # Make randomly sampled list of n nodes
+    desired_nodes = random.sample(range(array_size), n)
 
-    Returns
-    -------
-    numpy array
-        a vector of ranks such that v_i is the i-th rank from [0, 1],
-        v sums to 1
-
-    """
-    print("\n\n\n\n\n\n\n\n")
-    print(M_numpy)
-    print("\n\n\n\n\n\n\n\n")
-
-    shape = M_numpy.shape
-    personalize = np.zeros(shape)
-    # personalize = personalize.reshape(n, 1)
-    print(personalize)
-    print("\n\n\n\n\n\n\n\n")
-
+    # For the selected nodes, set them equal to 1/n
     for desired_node in desired_nodes:
-        personalize[desired_node][desired_node] = 1
+        personalize[desired_node] = 1 / n
 
-    print(personalize)
-    print("\n\n\n\n\n\n\n\n")
-
-    personalized_M = M_numpy @ personalize
+    # Initialize U
     u = personalize
 
-    print(personalized_M)
-    print("\n\n\n\n\n\n\n\n")
-
+    # Loop until convergence or num_iterations
     counter = 0
     while counter < num_iterations:
-        u0 = ((1 - d) * personalized_M @ u) + (d * personalize)
-        if (np.array_equal(u, u0)):
+        u0 = ((1 - d) * matrix_numpy @ u) + (d * personalize)
+        if np.array_equal(u, u0):
             break
         u = u0
         counter += 1
-        # print("Counter: {}".format(counter))
-        # print("u: {}".format(u))
-    print("Counter: {}".format(counter))
-    print(u)
 
-    for desired_node in desired_nodes:
-        # print("desired_node: {}".format(desired_node))
-        n = M_numpy.shape[1]
-        # print("N: {}".format(n))
-        v = np.zeros((n, 1))
-        v[desired_node] = 1
-        # print("v: {}".format(v))
-        u = v
-        counter = 0
-        while counter < num_iterations:
-            u0 = ((1 - d) * M_numpy @ u) + (d * v)
-            if (np.array_equal(u, u0)):
-                break
-            u = u0
-            counter += 1
-            # print("Counter: {}".format(counter))
-            # print("u: {}".format(u))
-        print("Counter: {}".format(counter))
-        print(u)
+    #  U to sorted pandas series
+    u = pd.Series(u.flatten(), index=matrix.columns)
+    u = u.sort_values(ascending=False)
+    return u
+
+
+def find_dominant_gestures(page_rank_scores, m=6):
+    return page_rank_scores[:6]
 
 
 parser = argparse.ArgumentParser()
@@ -128,27 +74,15 @@ k_from_args = int(args.k)
 if args.n is None:
     print("n for task 1 argument missing")
     exit(0)
-n_from_args = args.n
+n_from_args = int(args.n)
 
 if args.m is None:
     print("m for task 1 argument missing")
     exit(0)
 m_from_args = int(args.m)
 
-M = np.array([[0, 0, 0, 0, 1],
-              [0.5, 0, 0, 0, 0],
-              [0.5, 0, 0, 0, 0],
-              [0, 1, 0.5, 0, 0],
-              [0, 0, 0.5, 1, 0]])
 build_similarity_matrix()
-
-# x = similarity_matrix.values #returns a numpy array
-# min_max_scaler = preprocessing.MinMaxScaler()
-# x_scaled = min_max_scaler.fit_transform(x)
-# similarity_matrix = pd.DataFrame(x_scaled, columns=similarity_matrix.columns)
-similarity_matrix = similarity_matrix.div(similarity_matrix.sum(axis=1), axis=1)
-print(similarity_matrix)
-v_out = pagerank(similarity_matrix, 100, 0.85)
-
-# build_graph(k=k_from_args)
-# find_dominant_gestures(n=n_from_args, m=m_from_args)
+build_graph(k=k_from_args)
+page_rank_values = page_rank(similarity_matrix, 100, 0.85, n=n_from_args)
+dominant_gestures = find_dominant_gestures(page_rank_values, m=m_from_args)
+print(dominant_gestures)
