@@ -194,7 +194,7 @@ def get_gini_index(groups, classes):
 
 
 def decision_tree_classifier(frequency_definition):
-
+    pass
 
 
 def find_accuracy(found_labels):
