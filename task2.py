@@ -1,6 +1,8 @@
 import argparse
 import csv
+import os
 import random
+from ast import literal_eval
 
 import numpy as np
 import pandas as pd
@@ -44,10 +46,18 @@ def read_all_labeled_data():
 
 def build_similarity_matrix():
     global similarity_matrix
-    similarity_matrix = pd.read_csv('lda_similarity.csv', index_col=0, header=0)
+    similarity_matrix = pd.read_csv('dtw_similarity.csv', index_col=0, header=0)
     column_sums = similarity_matrix.sum(axis=1)
+    new_index = []
+    for ind in similarity_matrix.index.to_list():
+        split_ind = ind.split('.')
+        new_index.append(split_ind[0])
+    new_columns = []
+    for col in similarity_matrix.columns.to_list():
+        split_col = col.split('.')
+        new_columns.append(split_col[0])
     similarity_matrix = pd.DataFrame(similarity_matrix.values / column_sums.values[:, None],
-                                     index=similarity_matrix.index, columns=similarity_matrix.columns)
+                                     index=new_index, columns=new_columns)
     if verbose:
         print("similarity matrix")
         print(similarity_matrix)
@@ -147,8 +157,44 @@ def page_rank_classifier(num_iterations: int = 100, d: float = 0.85):
     return output
 
 
-def decision_tree_classifier():
-    pass
+def build_frequency_dataset(frequency_definition):
+    vector_path = os.path.join('vectors')
+    file_names = os.listdir(vector_path)
+    files_to_use = []
+    for file_name in file_names:
+        if file_name.split('.')[0] == ('vector_'+frequency_definition):
+            files_to_use.append(file_name)
+    for file_to_use in files_to_use:
+        with open(os.path.join('vector', file_to_use)) as f:
+            object_vector = [list(literal_eval(line)) for line in f]
+        final_vector = []
+        for i, row in enumerate(object_vector):
+            if i % 2 != 0:
+                final_vector += row
+
+
+def get_gini_index(groups, classes):
+    # count all samples at split point
+    n_instances = float(sum([len(group) for group in groups]))
+    # sum weighted Gini index for each group
+    gini = 0.0
+    for group in groups:
+        size = float(len(group))
+        # avoid divide by zero
+        if size == 0:
+            continue
+        score = 0.0
+        # score the group based on the score for each class
+        for class_val in classes:
+            p = [row[-1] for row in group].count(class_val) / size
+            score += p * p
+        # weight the group score by its relative size
+        gini += (1.0 - score) * (size / n_instances)
+    return gini
+
+
+def decision_tree_classifier(frequency_definition):
+
 
 
 def find_accuracy(found_labels):
