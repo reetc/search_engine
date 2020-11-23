@@ -10,7 +10,7 @@ similarity_matrix = pd.DataFrame.empty
 def build_similarity_matrix():
     # Fake data for now
     global similarity_matrix
-    similarity_matrix = pd.read_csv('fake_similarity_matrix.csv', index_col=0)
+    similarity_matrix = pd.read_csv('PCA_50_similarity_matrix.csv', index_col=0)
     similarity_matrix = similarity_matrix.div(similarity_matrix.sum(axis=1), axis=1)
 
 
