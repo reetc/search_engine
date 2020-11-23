@@ -16,6 +16,7 @@ def import_data():
 
     data = data.to_numpy()
     # print(data)
+    print("file_order",file_order)
     return data,file_order
 
 
@@ -84,7 +85,7 @@ class LSH:
 
 def train(l=8,k=4):
 
-    lsh = LSH(L=l,k=k,inp_dimensions=5)
+    lsh = LSH(L=l,k=k,inp_dimensions=50)
     data,file_order = import_data()
     for i,vec in enumerate(data):
         label = file_order[i].split("_")[0]
@@ -107,40 +108,40 @@ def evaluate(l=8,k=4):
     ln = 0
     prec = 0
     map = collections.defaultdict(list)
-    for i,vec in enumerate(data):
-      res = lsh.__getitem__(vec)
-      print(res)
-      pnum = int(file_order[i].split("_")[0])
-      print(res)
-      ans = []
-      similar_files = []
-      for j in res:
-        cnum = int(j)
-        flg = 0
-        for buc in dic:
-          if dic[buc][0]<=cnum<= dic[buc][1] and dic[buc][0]<=pnum<= dic[buc][1]:
-            ans.append(1)
-            flg = 1
-            break
-        if flg == 0:
-          ans.append(0)
-
-        similar_files.append(j)
-      map[file_order[i].split("_")[0]] = similar_files
-      sm+=sum(ans)/len(ans)
-      prec+=sum(ans)/30
-      ln+=len(ans)
-      print(file_order[i],ans,sum(ans)/len(ans))
-      print("Number of Files Searched",len(similar_files))
-      print("Number of Buckets Searched",)
-      print(similar_files)
+    # for i,vec in enumerate(data):
+    #   res = lsh.__getitem__(vec)
+    #   print(res)
+    #   pnum = int(file_order[i].split("_")[0])
+    #   print(res)
+    #   ans = []
+    #   similar_files = []
+    #   for j in res:
+    #     cnum = int(j)
+    #     flg = 0
+    #     for buc in dic:
+    #       if dic[buc][0]<=cnum<= dic[buc][1] and dic[buc][0]<=pnum<= dic[buc][1]:
+    #         ans.append(1)
+    #         flg = 1
+    #         break
+    #     if flg == 0:
+    #       ans.append(0)
+    #
+    #     similar_files.append(j)
+    #   map[file_order[i].split("_")[0]] = similar_files
+    #   sm+=sum(ans)/len(ans)
+    #   prec+=sum(ans)/30
+    #   ln+=len(ans)
+    #   print(file_order[i],ans,sum(ans)/len(ans))
+      # print("Number of Files Searched",len(similar_files))
+      # print("Number of Buckets Searched",)
+      # print(similar_files)
 
 
     ## Created matrix with key [file] and value : vector of similar files
-    print(map)
-    print("Accuracy: ",sm/93)
-    print("Precision: ",prec/93)
-    print("average length",ln/93)
+    # print(map)
+    # print("Accuracy: ",sm/93)
+    # print("Precision: ",prec/93)
+    # print("average length",ln/93)
 
 
     import pickle
@@ -184,6 +185,7 @@ def predict(file_num=278,t=15):
       candidate_file = str(candidate)+"_vector_tfidf.txt"
       candidate_vec = data[file_order.index(candidate_file)]
       # print(candidate_vec)
+      print(candidate)
 
       dot = np.dot(query_vec, candidate_vec)
       # norma = np.linalg.norm(query_vec)
@@ -283,5 +285,5 @@ if __name__ == "__main__":
 
 
 
-    # evaluate()
+    evaluate()
     predict(file_from_args,t_from_args)
