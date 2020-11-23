@@ -8,14 +8,14 @@ import argparse
 ## Import data
 def import_data():
     df = pandas.read_csv('latent_features.csv')
-    print(df)
+    # print(df)
     file_order  = list(df.iloc[:, 0])
-    print(file_order)
+    # print(file_order)
 
     data = df.iloc[:, 1:]
 
     data = data.to_numpy()
-    print(data)
+    # print(data)
     return data,file_order
 
 
@@ -43,7 +43,7 @@ class HTable:
 
     def __getitem__(self, input_vec):
         hash_val = self.generate_hash(input_vec)
-        print(hash_val)
+        # print(hash_val)
         return self.hash_table.get(hash_val, [])
 
 
@@ -238,49 +238,50 @@ def predict_custom(vec,t=15):
       # result = 1 - spatial.distance.cosine(query_vec, candidate_vec)
       ans.append((distance,candidate))
 
-    print(sorted(ans)[0:t])
+
+    ans = sorted(ans)[0:t]
+    print(ans)
     print("Total File Considered",len(candidates))
     print("Total Buckets Searched",buckets_searched)
+    return ans
 
 
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-L", "--L", help="No. of Layers")
-parser.add_argument("-k", "--k", help="No. of hashes per layer")
-parser.add_argument("-t", "--t", help="# of Similar files required")
-parser.add_argument("-file", "--file", help="Query file")
-
-
-args = parser.parse_args()
-
-if args.k is None:
-    print("k for task 3 argument missing")
-    exit(0)
-k_from_args = int(args.k)
-
-if args.L is None:
-    print("L for task 3 argument missing")
-    exit(0)
-l_from_args = int(args.L)
-
-evaluate(l_from_args,k_from_args)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-L", "--L", help="No. of Layers")
+    parser.add_argument("-k", "--k", help="No. of hashes per layer")
+    parser.add_argument("-t", "--t", help="# of Similar files required")
+    parser.add_argument("-file", "--file", help="Query file")
 
 
-if args.t is None:
-    print("t for task 3 argument missing")
-    exit(0)
-t_from_args = int(args.t)
+    args = parser.parse_args()
+
+    if args.k is None:
+        print("k for task 3 argument missing")
+        exit(0)
+    k_from_args = int(args.k)
+
+    if args.L is None:
+        print("L for task 3 argument missing")
+        exit(0)
+    l_from_args = int(args.L)
+
+    # evaluate(l_from_args,k_from_args)
 
 
-if args.file is None:
-    print("file for task 3 argument missing")
-    exit(0)
-file_from_args = args.file.split(".")[0]
+    if args.t is None:
+        print("t for task 3 argument missing")
+        exit(0)
+    t_from_args = int(args.t)
+
+
+    if args.file is None:
+        print("file for task 3 argument missing")
+        exit(0)
+    file_from_args = args.file.split(".")[0]
 
 
 
-# evaluate()
-predict(file_from_args,t_from_args)
-# query_vec = [-0.02810892564409419,-0.00045752648593749894,0.0215450110678379,0.2763679775423587,0.9603989964883773]
-# predict_custom(query_vec,t_from_args)
+    # evaluate()
+    predict(file_from_args,t_from_args)
