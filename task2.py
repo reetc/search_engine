@@ -6,6 +6,8 @@ import pandas as pd
 
 from collections import Counter
 
+from utils import page_rank
+
 PATH_TO_TRAINING_SET = 'sample_training_labels.csv'
 PATH_TO_ALL_LABELED_DATA = 'all_labels.csv'
 similarity_matrix = None
@@ -141,21 +143,7 @@ def page_rank_classifier(num_iterations: int = 100, d: float = 0.85):
         # For the selected nodes, set them equal to 1/n
         personalize[index_to_classify] = 1
 
-        # Initialize U
-        u = personalize
-
-        # Loop until convergence or num_iterations
-        counter = 0
-        while counter < num_iterations:
-            u0 = ((1 - d) * matrix_numpy @ u) + (d * personalize)
-            if np.array_equal(u, u0):
-                break
-            u = u0
-            counter += 1
-
-        #  U to sorted pandas series
-        u = pd.Series(u.flatten(), index=similarity_matrix.columns)
-        u = u.sort_values(ascending=False)
+        u = page_rank(similarity_matrix, personalize, 100, 0.85)
         print(u.index[1])
         output.append((label, find_training_label(u.index[1])))
         print()
@@ -351,7 +339,7 @@ read_all_labeled_data()
 
 if c_from_args in ['1', '2']:
     if args.k is None:
-        print("k for task 1 argument missing")
+        print("k for task 2 argument missing")
         exit(0)
     k_from_args = int(args.k)
     build_similarity_matrix()
