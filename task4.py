@@ -19,22 +19,25 @@ def get_modified_results_after_probabilistic_feedback(gesture_name: str,
                                                       irrelevant_results: List,
                                                       untagged_results: List):
     cleaned_relevant_result_names = [e.split('_')[0] for e in relevant_results]
-    gesture_vectors_df = utils.get_gesture_vectors(GESTURE_VECTORS_FILE_PATH)
-    _binarize(gesture_vectors_df)
-    print(gesture_vectors_df)
+    df = utils.get_gesture_vectors(GESTURE_VECTORS_FILE_PATH)
+    bdf = _binarize(df)
+    print(df)
     similarity_gesture_pairs = []
-    for gesture_index, gesture_row in gesture_vectors_df.iterrows():
-        similarity = sim(gesture_row, gesture_vectors_df.loc[gesture_name], cleaned_relevant_result_names,
-                         gesture_vectors_df,
-                         gesture_name, gesture_index)
+    for gesture_index, gesture_row in df.iterrows():
+        similarity = sim(d=gesture_row, q=df.loc[gesture_name],
+                         relevant_results=cleaned_relevant_result_names,
+                         bdf=bdf, odf=df,
+                         q_gesture_name=gesture_name, d_gesture_name=gesture_index)
         similarity_gesture_pairs.append((similarity, gesture_index))
     return sorted(similarity_gesture_pairs)
 
 
 def _binarize(df: DataFrame):
-    column_names = df.columns
+    copied_df = df.copy()
+    column_names = copied_df.columns
     for column in column_names:
-        df[column] = _binarize_column(df[column])
+        copied_df[column] = _binarize_column(copied_df[column])
+    return copied_df
 
 
 def _binarize_column(s: Series):
@@ -51,16 +54,17 @@ def _binarize_column(s: Series):
     return pd.Series(labels, name=s.name, index=s.index)
 
 
-def sim(d: list, q: list, relevant_results: List, df: DataFrame, q_gesture_name, d_gesture_name):
+def sim(d: list, q: list, relevant_results: List, bdf: DataFrame, odf: DataFrame, q_gesture_name, d_gesture_name):
     R = len(relevant_results)
-    N = len(df)
-    n = count_of_objects_in_which_di_1(df)
-    r = count_of_relevant_objects_in_which_di_1(relevant_results, df)
+    N = len(bdf)
+    n = count_of_objects_in_which_di_1(bdf)
+    r = count_of_relevant_objects_in_which_di_1(relevant_results, bdf)
     sum = 0
-    for i in range(len(df.columns)):
+    for i in range(len(bdf.columns)):
         pi = (r[i] + 0.5) / (R + 1)
         ui = (n[i] - r[i] + 0.5) / (N - R + 1)
-        sum += d[i] * log(pi * (1 - ui) / ui * (1 - pi)) + np.dot(df.loc[q_gesture_name], df.loc[d_gesture_name])
+        sum += d[i] * log(pi * (1 - ui) / ui * (1 - pi)) + \
+               10*np.dot(odf.loc[q_gesture_name], odf.loc[d_gesture_name])
     return sum
 
 
@@ -90,11 +94,13 @@ def count_of_relevant_objects_in_which_di_1(relevant_results: List, df: DataFram
 if __name__ == "__main__":
     pd.set_option('display.max_rows', 500)
     similarity_gesture_pairs = get_modified_results_after_probabilistic_feedback(
-        "1",
-        # ["561", "562", "563", "563", "564", "565", "566", "567", "568"],
+        "271",
+        # ["561", "562", "563", "563", "564", "565", "566", "567", "568", "560"],
         # [str(x) for x in range(559, 589+1)],
-        # [str(x) for x in range(270, 279+1)],
-        [str(x) for x in range(1, 30 + 1)],
+        [str(x) for x in [250, 253, 258, 263, 265, 577, 582, 1]],
+        # [str(x) for x in range(1, 30 + 1)],
+        # ["561"] * 10,
+        # ["571", "572", "573", "574", "575", "576"],
         [],
         []
     )
