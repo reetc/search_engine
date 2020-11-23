@@ -1,8 +1,5 @@
 import argparse
 import csv
-import os
-import random
-from ast import literal_eval
 
 import numpy as np
 import pandas as pd
@@ -14,6 +11,7 @@ PATH_TO_ALL_LABELED_DATA = 'all_labels.csv'
 similarity_matrix = None
 labeled_data = []
 all_labeled_data = []
+dt_file_order = []
 
 verbose = False
 
@@ -21,8 +19,8 @@ verbose = False
 def read_training_data():
     # Read the training data into a list for easy extraction
     global labeled_data
-    with open(PATH_TO_TRAINING_SET, 'r', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
+    with open(PATH_TO_TRAINING_SET, 'r', newline='') as csv_file:
+        reader = csv.reader(csv_file, delimiter=',')
         for row in reader:
             if len(row) > 1:
                 labeled_data.append((row[0], row[1]))
@@ -79,6 +77,7 @@ def find_k_nearest_neighbors(k=5):
         print(filtered_dataframe)
 
     # For each column, retain only the K largest values
+    # noinspection PyTypeChecker
     similarity_matrix = pd.DataFrame(
         np.where(filtered_dataframe.rank(axis=0, method='min', ascending=False) > k, 0, filtered_dataframe),
         columns=filtered_dataframe.columns, index=filtered_dataframe.index)
@@ -89,6 +88,12 @@ def find_k_nearest_neighbors(k=5):
 
 def find_training_label(gesture_name):
     for labeled_datum in labeled_data:
+        if labeled_datum[0] == str(gesture_name):
+            return labeled_datum[1]
+
+
+def find_real_label(gesture_name):
+    for labeled_datum in all_labeled_data:
         if labeled_datum[0] == str(gesture_name):
             return labeled_datum[1]
 
@@ -157,27 +162,14 @@ def page_rank_classifier(num_iterations: int = 100, d: float = 0.85):
     return output
 
 
-def build_frequency_dataset(frequency_definition):
-    vector_path = os.path.join('vectors')
-    file_names = os.listdir(vector_path)
-    files_to_use = []
-    for file_name in file_names:
-        if file_name.split('.')[0] == ('vector_'+frequency_definition):
-            files_to_use.append(file_name)
-    for file_to_use in files_to_use:
-        with open(os.path.join('vector', file_to_use)) as f:
-            object_vector = [list(literal_eval(line)) for line in f]
-        final_vector = []
-        for i, row in enumerate(object_vector):
-            if i % 2 != 0:
-                final_vector += row
-
-
-def get_gini_index(groups, classes):
+# Currently GINI index
+def get_score(groups, classes):
     # count all samples at split point
-    n_instances = float(sum([len(group) for group in groups]))
+    n_instances = 0.0
+    for group in groups:
+        n_instances += float(len(group))
     # sum weighted Gini index for each group
-    gini = 0.0
+    output = 0.0
     for group in groups:
         size = float(len(group))
         # avoid divide by zero
@@ -186,23 +178,152 @@ def get_gini_index(groups, classes):
         score = 0.0
         # score the group based on the score for each class
         for class_val in classes:
-            p = [row[-1] for row in group].count(class_val) / size
-            score += p * p
+            proportion = 0
+            for row in group:
+                if row[-1] == class_val:
+                    proportion += 1
+            proportion = proportion / size
+            score += proportion * proportion
         # weight the group score by its relative size
-        gini += (1.0 - score) * (size / n_instances)
-    return gini
+        output += (1.0 - score) * (size / n_instances)
+    return output
+
+
+# Split a dataset based on an attribute and an attribute value
+def test_split(index, value, dataset):
+    left, right = list(), list()
+    for row in dataset:
+        if row[index] < value:
+            left.append(row)
+        else:
+            right.append(row)
+    return left, right
+
+
+# Create a terminal node value
+def to_terminal(group):
+    outcomes = []
+    for row in group:
+        outcomes.append(row[-1])
+    return max(set(outcomes), key=outcomes.count)
+
+
+# Select the best split point for a dataset
+def get_split(dataset):
+    class_values = list(set(row[-1] for row in dataset))
+    selected_index, selected_value, selected_score, selected_groups = 999, 999, 999, None
+    for index in range(len(dataset[0]) - 1):
+        for row in dataset:
+            groups = test_split(index, row[index], dataset)
+            score = get_score(groups, class_values)
+            if score < selected_score:
+                selected_index, selected_value, selected_score, selected_groups = index, row[index], score, groups
+    return {'index': selected_index, 'value': selected_value, 'groups': selected_groups}
+
+
+# Create child splits for a node or make terminal
+def split(node, max_depth, depth, max_num):
+    left, right = node['groups']
+    del (node['groups'])
+    # check for a no split
+    if not left or not right:
+        node['left'] = node['right'] = to_terminal(left + right)
+        return
+
+    # check for max depth
+    if depth >= max_depth:
+        node['left'], node['right'] = to_terminal(left), to_terminal(right)
+        return
+
+    # process left child
+    if len(left) <= max_num:
+        node['left'] = to_terminal(left)
+    else:
+        node['left'] = get_split(left)
+        split(node['left'], max_depth, depth + 1, max_num)
+
+    # process right child
+    if len(right) <= max_num:
+        node['right'] = to_terminal(right)
+    else:
+        node['right'] = get_split(right)
+        split(node['right'], max_depth, depth + 1, max_num)
+
+
+# Build a decision tree
+def build_tree(train, max_depth, max_num):
+    root = get_split(train)
+    split(root, max_depth, 1, max_num)
+    return root
+
+
+def get_file_order(frequency_definition):
+    global dt_file_order
+    with open('file_order_' + frequency_definition + '.txt', 'r', newline='') as order_file:
+        for index, line in enumerate(order_file):
+            dt_file_order.append(line)
+
+
+def get_frequency_training_set(frequency_definition):
+    dataset = []
+
+    with open('dataset_' + frequency_definition + '.txt', 'r', newline='') as csv_file:
+        for index, row in enumerate(csv_file):
+            if find_training_label(dt_file_order[index].split('_')[0]) is not None:
+                data_row = eval(row)
+                data_row.append(find_training_label(dt_file_order[index].split('_')[0]))
+                dataset.append(data_row)
+    # print(dataset)
+    return dataset
+
+
+def get_full_frequency_set(frequency_definition):
+    dataset = []
+
+    with open('dataset_' + frequency_definition + '.txt', 'r', newline='') as csv_file:
+        for index, row in enumerate(csv_file):
+            if find_real_label(dt_file_order[index].split('_')[0]) is not None:
+                data_row = eval(row)
+                data_row.append(find_real_label(dt_file_order[index].split('_')[0]))
+                dataset.append(data_row)
+    # print(dataset)
+    return dataset
+
+
+# Make a prediction with a decision tree
+def predict(node, row):
+    if row[node['index']] < node['value']:
+        if isinstance(node['left'], dict):
+            return predict(node['left'], row)
+        else:
+            return node['left']
+    else:
+        if isinstance(node['right'], dict):
+            return predict(node['right'], row)
+        else:
+            return node['right']
 
 
 def decision_tree_classifier(frequency_definition):
-    pass
+    output = []
+    get_file_order(frequency_definition)
+    training_dataset = get_frequency_training_set(frequency_definition)
+    decision_tree = build_tree(training_dataset, 80, 3)
+    full_dataset = get_full_frequency_set(frequency_definition)
+    #  predict with a stump
+    for index, row in enumerate(full_dataset):
+        prediction = predict(decision_tree, row)
+        output.append((dt_file_order[index].split('_')[0], prediction))
+        print('Expected=%s, Got=%s' % (row[-1], prediction))
+    return output
 
 
-def find_accuracy(found_labels):
+def find_accuracy(labels):
     num_correct = 0
-    for found_label in found_labels:
-        if found_label in all_labeled_data:
+    for label in labels:
+        if label in all_labeled_data:
             num_correct += 1
-    return num_correct/len(all_labeled_data)
+    return num_correct / len(all_labeled_data)
 
 
 parser = argparse.ArgumentParser()
@@ -236,12 +357,14 @@ if c_from_args in ['1', '2']:
     build_similarity_matrix()
     find_k_nearest_neighbors(k=k_from_args)
 
+found_labels = []
+
 if c_from_args == '1':
     found_labels = k_nearest_neighbor_classifier()
 elif c_from_args == '2':
     found_labels = page_rank_classifier()
 elif c_from_args == '3':
-    found_labels = decision_tree_classifier()
+    found_labels = decision_tree_classifier('tf')
 
 for found_label in found_labels:
     print(found_label)
