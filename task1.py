@@ -21,8 +21,16 @@ def build_similarity_matrix():
     global similarity_matrix
     similarity_matrix = pd.read_csv('dtw_similarity.csv', index_col=0, header=0)
     column_sums = similarity_matrix.sum(axis=1)
+    new_index = []
+    for ind in similarity_matrix.index.to_list():
+        split_ind = ind.split('.')
+        new_index.append(split_ind[0])
+    new_columns = []
+    for col in similarity_matrix.columns.to_list():
+        split_col = col.split('.')
+        new_columns.append(split_col[0])
     similarity_matrix = pd.DataFrame(similarity_matrix.values / column_sums.values[:, None],
-                                     index=similarity_matrix.index, columns=similarity_matrix.columns)
+                                     index=new_index, columns=new_columns)
     if verbose:
         print("similarity matrix")
         print(similarity_matrix)
