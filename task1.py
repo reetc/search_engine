@@ -21,7 +21,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 def build_similarity_matrix():
     global similarity_matrix
-    similarity_matrix = pd.read_csv('dtw_similarity.csv', index_col=0, header=0)
+    similarity_matrix = pd.read_csv('SVD_50_similarity_matrix.csv', index_col=0, header=0)
     column_sums = similarity_matrix.sum(axis=1)
     new_index = []
     for ind in similarity_matrix.index.to_list():
