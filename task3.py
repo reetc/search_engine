@@ -199,6 +199,49 @@ def predict(file_num=278,t=15):
 
 
 
+def predict_custom(vec,t=15):
+    # file_num = 23
+
+
+    import pickle
+    with open('lsh_model', 'rb') as model:
+        lsh = pickle.load(model)
+    data,file_order = import_data()
+    # query_num = str(file_num)
+    # query_file = query_num+"_vector_tfidf.txt"
+    # df = pandas.read_csv('latent_features.csv')
+    # print(df)
+    # file_order  = list(df.iloc[:, 0])
+    # print(file_order)
+    # print(file_order.index(query_file))
+    # query_vec = data[file_order.index(query_file)]
+    query_vec=vec[:]
+    candidates=lsh.__getitem__(query_vec)
+    buckets_searched = lsh.buckets()
+    # print(query_vec)
+    # candidates = map[query_num]
+    similarity_mat = collections.defaultdict(list)
+    ans = []
+
+
+    # parent_vector =
+    for candidate in candidates:
+      candidate_file = str(candidate)+"_vector_tfidf.txt"
+      candidate_vec = data[file_order.index(candidate_file)]
+      # print(candidate_vec)
+
+      dot = np.dot(query_vec, candidate_vec)
+      # norma = np.linalg.norm(query_vec)
+      # normb = np.linalg.norm(candidate_vec)
+      # cos = dot / (norma * normb)
+      distance = math.sqrt(sum([(a - b) ** 2 for a,b  in zip(query_vec, candidate_vec)]))
+      # result = 1 - spatial.distance.cosine(query_vec, candidate_vec)
+      ans.append((distance,candidate))
+
+    print(sorted(ans)[0:t])
+    print("Total File Considered",len(candidates))
+    print("Total Buckets Searched",buckets_searched)
+
 
 
 
@@ -239,3 +282,5 @@ file_from_args = args.file.split(".")[0]
 
 # evaluate()
 predict(file_from_args,t_from_args)
+# query_vec = [-0.02810892564409419,-0.00045752648593749894,0.0215450110678379,0.2763679775423587,0.9603989964883773]
+# predict_custom(query_vec,t_from_args)
