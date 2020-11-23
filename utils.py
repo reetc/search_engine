@@ -24,3 +24,9 @@ def page_rank(matrix, page_rank_seed_vector, num_iterations: int = 100, d: float
     u = pd.Series(u.flatten(), index=matrix.columns)
     u = u.sort_values(ascending=False)
     return u
+
+
+def get_gesture_vectors(gesture_vectors_file_path):
+    df = pd.read_csv(gesture_vectors_file_path, index_col=0)
+    df.index = [index.split('_')[0] for index in df.index]  # "10_vector_tfidf.txt" --> "10"
+    return df
