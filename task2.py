@@ -134,7 +134,7 @@ def page_rank_classifier(num_iterations: int = 100, d: float = 0.85):
     # Get size of values
     array_size = matrix_numpy.shape[0]
     for label, content in similarity_matrix.iteritems():
-        print(label)
+        # print(label)
         index_to_classify = similarity_matrix.columns.get_loc(label)
 
         # Initialize the personalization vector to 0s
@@ -144,9 +144,9 @@ def page_rank_classifier(num_iterations: int = 100, d: float = 0.85):
         personalize[index_to_classify] = 1
 
         u = page_rank(similarity_matrix, personalize, 100, 0.85)
-        print(u.index[1])
+        # print(u.index[1])
         output.append((label, find_training_label(u.index[1])))
-        print()
+        # print()
     return output
 
 

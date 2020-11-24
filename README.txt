@@ -36,9 +36,11 @@ Other generated files to copy from phase 2 outputs are "file_order_tf.txt", "fil
 
 ## Task 1:
 python task1.py -k=[#K Nearest Neighbors] -m=[#Dominant gestures] -gesture_set_list=[comma-seperated list of gestures. No file extensions]
+Ex: python task1.py -k=3 -m=10 -gesture_set_list=1,3,5
 
 ## Task 2:
 python task2.py -c=[Classifier: 1. KNN 2. PPR 3. Decision Tree] -k=[#K Nearest Neighbors, required for KNN and PPR]
+Ex: python task2.py -c=2 -k=20
 
 ## Task 3:
 python task3.py --L=[Layers] --k=[Hashes per Layer] --t=[Number of similar files to output] --file =[Query file name]
