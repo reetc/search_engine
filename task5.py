@@ -16,11 +16,9 @@ def initComponentMatrix(gesture_vectors_file_path):
     new_newindex = []
     for ind in componentMatrix.index.to_list():
         split_ind = ind.split('_')
-        # val = split_ind[0]
         new_newindex.append(split_ind[0])
     componentMatrix = pd.DataFrame(componentMatrix.values, index=new_newindex)
-    print(componentMatrix)
-    # print("testing component", componentMatrix.loc["1-1"])
+
 
 def initialSeedMatrix():
     global gestureMatrix
@@ -33,7 +31,7 @@ def initialSeedMatrix():
         split_ind = ind.split('.')
         new_index.append(split_ind[0])
     initialseedmatrix = pd.DataFrame(initialseedmatrix, index=new_index)
-    print("initial seed matrix",initialseedmatrix.index)
+    # print("initial seed matrix",initialseedmatrix.index)
     return initialseedmatrix
 
 
@@ -99,21 +97,23 @@ def modifypagerankvector(page_rank_seed_vector,relavant,irrelavant,untouched):
         page_rank_seed_vector.loc[irrel] = page_rank_seed_vector.loc[irrel] - (toSub / sqrt(denominator))
         page_rank_seed_vector.loc[irrel] = page_rank_seed_vector.loc[irrel] / len(irrelavant)
     # print("pagerankseed vector",page_rank_seed_vector)
+    # print(page_rank_seed_vector)
+    # page_rank_seed_vector.to_csv("seedVector.csv")
     return page_rank_seed_vector
 
 
 def get_modified_results_after_ppr(query_gesture_name: str, relevant_results: List, irrelevant_results: List, untagged_results: List,
                                                       gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH,
-                                   similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH):
+                                   similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH, numberOfResults = 10):
     initComponentMatrix(gesture_vectors_file_path)
     similarity_matrix = get_similarity_matrix(similarity_matrix_path,query_gesture_name)
     page_rank_seed_vector = initialSeedMatrix()
-    print("relevant result list",relevant_results)
     page_rank_seed_vector = modifypagerankvector(page_rank_seed_vector, relevant_results,
                                                  irrelevant_results, untagged_results)
     page_rank_seed_vector = np.asarray(page_rank_seed_vector)
     page_rank_values = page_rank(similarity_matrix, page_rank_seed_vector, 100, 0.85)
-    result = getResult(page_rank_values)
+    # page_rank_values.to_csv("RankValues.csv")
+    result = getResult(page_rank_values, numberOfResults)
     return result
 
 
@@ -122,6 +122,7 @@ def get_modified_results_after_ppr(query_gesture_name: str, relevant_results: Li
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--query", help="list of relevant gestures, e.g. --query=570")
+    parser.add_argument("-t", "--numRes", help="list of relevant information results")
     parser.add_argument("-r", "--relevant", help="list of relevant gestures, e.g. --relevant=570,570,571,574,575")
     parser.add_argument("-i", "--irrelevant", help="list of irrelevant gestures, e.g. --irrelevant=572,573")
     args = parser.parse_args()
@@ -141,13 +142,19 @@ if __name__ == "__main__":
         exit(0)
     irrelevant = args.irrelevant.split(',')
 
+    if args.numRes is None:
+        print("-t or number of results missing; using default as 10")
+        numberOfResults = 10
+    else:
+        numberOfResults = int(args.numRes)
 
     new_suggestions = get_modified_results_after_ppr(query_gesture_name=query,
                                                      relevant_results=relevant,
                                                      irrelevant_results=irrelevant,
                                                      untagged_results=[],
                                                      gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH,
-                                                     similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH)
+                                                     similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH,
+                                                     numberOfResults = numberOfResults)
 
     print(new_suggestions)
 
