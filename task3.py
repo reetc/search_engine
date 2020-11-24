@@ -16,7 +16,7 @@ def import_data():
 
     data = data.to_numpy()
     # print(data)
-    print("file_order",file_order)
+    # print("file_order",file_order)
     return data,file_order
 
 
@@ -89,7 +89,7 @@ def train(l=8,k=4):
     data,file_order = import_data()
     for i,vec in enumerate(data):
         label = file_order[i].split("_")[0]
-        print(label)
+        # print(label)
         lsh.__setitem__(vec,label)
         # print(i,vec)
     return lsh,file_order
@@ -185,7 +185,7 @@ def predict(file_num=278,t=15):
       candidate_file = str(candidate)+"_vector_tfidf.txt"
       candidate_vec = data[file_order.index(candidate_file)]
       # print(candidate_vec)
-      print(candidate)
+      # print(candidate)
 
       dot = np.dot(query_vec, candidate_vec)
       # norma = np.linalg.norm(query_vec)
@@ -195,9 +195,11 @@ def predict(file_num=278,t=15):
       # result = 1 - spatial.distance.cosine(query_vec, candidate_vec)
       similarity_mat[query_num].append((distance,candidate))
 
-    print(sorted(similarity_mat[query_num])[0:t])
+    results = sorted(similarity_mat[query_num])[0:t]
+    print(results)
     print("Total File Considered",len(candidates))
     print("Total Buckets Searched",buckets_searched)
+    return results
 
 
 
@@ -247,6 +249,15 @@ def predict_custom(vec,t=15):
     print("Total Buckets Searched",buckets_searched)
     return ans
 
+
+hashing_done = False
+def get_similar_gestures(file_number, l=8, k=4, t=11):
+    global hashing_done
+    if not hashing_done:
+        evaluate(l, k)
+        hashing_done = True
+    results = predict(file_number, t)
+    return [y for _,y in results]
 
 
 if __name__ == "__main__":
