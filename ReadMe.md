@@ -15,3 +15,6 @@ Ex: python task4.py -q=570 -r=570,570,571,574,575 -i=572,573
 ## Task 5:
 python task4.py -q=[Query gesture] -r=[List of relevant gestures] -i=[List of irrelevant gestures]  -t=[no of results to display] -k=[No of nodes to connect in the graph]
 Ex: python task5.py -q=570 -r=570,570,571,574,575 -i=572,573 -t=10 -k=15
+
+## Task 6:
+python task6.py
