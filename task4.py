@@ -18,11 +18,10 @@ RI_COUNTS = []
 def get_modified_results_after_probabilistic_feedback(query_gesture_name: str,
                                                       relevant_results: List,
                                                       irrelevant_results: List,
-                                                      untagged_results: List,
+                                                      all_results: List,
                                                       gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH):
     cleaned_relevant_result_names = [e.split('_')[0] for e in relevant_results]
     cleaned_irrelevant_result_names = [e.split('_')[0] for e in irrelevant_results]
-    all_results = cleaned_relevant_result_names + cleaned_irrelevant_result_names
     bdf = _binarize(utils.get_gesture_vectors(gesture_vectors_file_path))
     # print(bdf)
     similarity_gesture_pairs = []
@@ -145,7 +144,7 @@ if __name__ == "__main__":
         query_gesture_name=query,
         relevant_results=relevant,
         irrelevant_results=irrelevant,
-        untagged_results=[],
+        all_results=[],
         gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH
     )
 
