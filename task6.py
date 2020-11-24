@@ -1,64 +1,78 @@
-import tkinter as tk
-import subprocess
-from tkinter import ttk
-from tkinter import scrolledtext
+
+import argparse
+import task5
+import task3
+from task3 import LSH,HTable
+from task1 import predict_custom
+import pandas
 
 
-#submit button function
-def submit():
-    #parameters
-    query_text=query_entry.get()
-    param_text=param_entry.get()
-    task_selector = feedback_select.get()
+def import_data():
+    df = pandas.read_csv('PCA_50_latent_features.csv')
+    print(df)
+    file_order  = list(df.iloc[:, 0])
+    print(file_order)
 
-    #Clear before new submission
-    results.delete(0.0, tk.END)
-    task4arg = "TODO"
-    task5arg = "TODO"
+    data = df.iloc[:, 1:]
 
-    #radiobutton handler
-    if task_selector == 'task4':
-        results.insert(tk.END, 'PR feedback TODO')
-        #subprocess.call(['python', 'task4.py', task4arg])
-    elif task_selector == 'task5':
-        results.insert(tk.END, 'CB feedback TODO')
-        #subprocess.call(['python', 'task5.py', task5arg])
-    else:
-        results.insert(tk.END, 'No feedback TODO')
-        #TOFIX: Unsure if this is necessary: depends on T4/T5
+    data = data.to_numpy()
+    print(data)
+    return data,file_order
 
-#Window Settings
-window = tk.Tk()
-window.title("Task 6")
-window.geometry("800x500")
-ttk.Label (window, text="Query and Feedback Interface\n",font="none 16").grid(row=0,column=0, columnspan=2,sticky=tk.W)
+parser = argparse.ArgumentParser()
+parser.add_argument("-option", "--option", help="1 for task 4 ; 2 for task 5")
+parser.add_argument("-t", "--t", help="number of results needed")
+# parser.add_argument("-t", "--t", help="# of Similar files required")
+parser.add_argument("-file", "--file", help="Query file")
 
-#Provide query and parameters
-ttk.Label (window,text="Enter a query: [FORMAT TODO: gesture file]",font="none 12").grid(row=1,column=0,sticky=tk.W)
-query_entry = tk.Entry(window,width=40)
-query_entry.grid(row=1,column=1,sticky=tk.W)
 
-ttk.Label (window, text="Enter number of results: [FORMAT TODO]",font="none 12").grid(row=2,column=0,sticky=tk.W)
-param_entry = tk.Entry(window,width=40)
-param_entry.grid(row=2,column=1,sticky=tk.W)
+args = parser.parse_args()
 
-ttk.Label (window, text="Enter relevance parameters: [FORMAT TODO]",font="none 12").grid(row=4,column=0,sticky=tk.W)
-param_entry = tk.Entry(window,width=40)
-param_entry.grid(row=5,column=0,sticky=tk.W)
+if args.option is None:
+    print("option argument missing")
+    exit(0)
+option = int(args.option)
 
-#Task4 or Task5
-feedback_select = tk.StringVar()
-task4_select = ttk.Radiobutton(window, text="Probabilistic Relevance", variable=feedback_select, value='task4')
-task4_select.grid(row=4, column=1,sticky=tk.W)
-task5_select = ttk.Radiobutton(window, text="Classifier-based Relevance", variable=feedback_select, value='task5')
-task5_select.grid(row=5, column=1,sticky=tk.W)
+if args.t is None:
+    print("t argument missing")
+    exit(0)
+t = int(args.t)
 
-#submit button
-tk.Button(window,text="SUBMIT QUERY",width=20,command=submit).grid(row=6,column=0,sticky=tk.W)
+if args.file is None:
+    print("file argument missing")
+    exit(0)
+file_key = args.file.split(".")[0]
 
-#Show results
-results = scrolledtext.ScrolledText(window, width=60, height=10,wrap=tk.WORD)
-results.grid(row=7,column=0,columnspan=2,sticky=tk.W)
 
-####Run GUI####
-window.mainloop()
+query = file_key
+relevant_gestures = []
+nonrelevant_gestures = []
+data,file_order=task5.import_data()
+query_vec = data[file_order.index(query+"_vector_tfidf.txt")]
+
+# print(file_order,query_vec)
+while(1):
+
+    new_query=task5.modify_query_vec(relevant_gestures,nonrelevant_gestures,query_vec)
+    print(new_query)
+    res = task3.predict_custom(new_query,t)
+    # res = predict_custom(new_query,t)
+    for el in res:
+        print("Gesture:",el[1],"Score:",el[0])
+
+    input_str = input("Enter q to quit: ")
+    if input_str == "q" or input_str == "Q":
+        exit(0)
+    # while(1):
+    input_str = input("Enter comma seperated relevant file keys: ")
+    relevant_gestures = input_str.split(",")
+    print("Relevant:",relevant_gestures)
+
+    input_str = input("Enter comma seperated nonn-relevant file keys: ")
+    nonrelevant_gestures = input_str.split(",")
+    print("Non-Relevant:",nonrelevant_gestures)
+
+    query_vec = new_query
+    print(query_vec)
+    # break
+>>>>>>> main

@@ -8,14 +8,15 @@ import argparse
 ## Import data
 def import_data():
     df = pandas.read_csv('latent_features.csv')
-    print(df)
+    # print(df)
     file_order  = list(df.iloc[:, 0])
-    print(file_order)
+    # print(file_order)
 
     data = df.iloc[:, 1:]
 
     data = data.to_numpy()
-    print(data)
+    # print(data)
+    print("file_order",file_order)
     return data,file_order
 
 
@@ -43,7 +44,7 @@ class HTable:
 
     def __getitem__(self, input_vec):
         hash_val = self.generate_hash(input_vec)
-        print(hash_val)
+        # print(hash_val)
         return self.hash_table.get(hash_val, [])
 
 
@@ -84,7 +85,7 @@ class LSH:
 
 def train(l=8,k=4):
 
-    lsh = LSH(L=l,k=k,inp_dimensions=5)
+    lsh = LSH(L=l,k=k,inp_dimensions=50)
     data,file_order = import_data()
     for i,vec in enumerate(data):
         label = file_order[i].split("_")[0]
@@ -107,40 +108,40 @@ def evaluate(l=8,k=4):
     ln = 0
     prec = 0
     map = collections.defaultdict(list)
-    for i,vec in enumerate(data):
-      res = lsh.__getitem__(vec)
-      print(res)
-      pnum = int(file_order[i].split("_")[0])
-      print(res)
-      ans = []
-      similar_files = []
-      for j in res:
-        cnum = int(j)
-        flg = 0
-        for buc in dic:
-          if dic[buc][0]<=cnum<= dic[buc][1] and dic[buc][0]<=pnum<= dic[buc][1]:
-            ans.append(1)
-            flg = 1
-            break
-        if flg == 0:
-          ans.append(0)
-
-        similar_files.append(j)
-      map[file_order[i].split("_")[0]] = similar_files
-      sm+=sum(ans)/len(ans)
-      prec+=sum(ans)/30
-      ln+=len(ans)
-      print(file_order[i],ans,sum(ans)/len(ans))
-      print("Number of Files Searched",len(similar_files))
-      print("Number of Buckets Searched",)
-      print(similar_files)
+    # for i,vec in enumerate(data):
+    #   res = lsh.__getitem__(vec)
+    #   print(res)
+    #   pnum = int(file_order[i].split("_")[0])
+    #   print(res)
+    #   ans = []
+    #   similar_files = []
+    #   for j in res:
+    #     cnum = int(j)
+    #     flg = 0
+    #     for buc in dic:
+    #       if dic[buc][0]<=cnum<= dic[buc][1] and dic[buc][0]<=pnum<= dic[buc][1]:
+    #         ans.append(1)
+    #         flg = 1
+    #         break
+    #     if flg == 0:
+    #       ans.append(0)
+    #
+    #     similar_files.append(j)
+    #   map[file_order[i].split("_")[0]] = similar_files
+    #   sm+=sum(ans)/len(ans)
+    #   prec+=sum(ans)/30
+    #   ln+=len(ans)
+    #   print(file_order[i],ans,sum(ans)/len(ans))
+      # print("Number of Files Searched",len(similar_files))
+      # print("Number of Buckets Searched",)
+      # print(similar_files)
 
 
     ## Created matrix with key [file] and value : vector of similar files
-    print(map)
-    print("Accuracy: ",sm/93)
-    print("Precision: ",prec/93)
-    print("average length",ln/93)
+    # print(map)
+    # print("Accuracy: ",sm/93)
+    # print("Precision: ",prec/93)
+    # print("average length",ln/93)
 
 
     import pickle
@@ -184,6 +185,7 @@ def predict(file_num=278,t=15):
       candidate_file = str(candidate)+"_vector_tfidf.txt"
       candidate_vec = data[file_order.index(candidate_file)]
       # print(candidate_vec)
+      print(candidate)
 
       dot = np.dot(query_vec, candidate_vec)
       # norma = np.linalg.norm(query_vec)
@@ -199,43 +201,89 @@ def predict(file_num=278,t=15):
 
 
 
+def predict_custom(vec,t=15):
+    # file_num = 23
+
+
+    import pickle
+    with open('lsh_model', 'rb') as model:
+        lsh = pickle.load(model)
+    data,file_order = import_data()
+    # query_num = str(file_num)
+    # query_file = query_num+"_vector_tfidf.txt"
+    # df = pandas.read_csv('latent_features.csv')
+    # print(df)
+    # file_order  = list(df.iloc[:, 0])
+    # print(file_order)
+    # print(file_order.index(query_file))
+    # query_vec = data[file_order.index(query_file)]
+    query_vec=vec[:]
+    candidates=lsh.__getitem__(query_vec)
+    buckets_searched = lsh.buckets()
+    # print(query_vec)
+    # candidates = map[query_num]
+    similarity_mat = collections.defaultdict(list)
+    ans = []
+
+
+    # parent_vector =
+    for candidate in candidates:
+      candidate_file = str(candidate)+"_vector_tfidf.txt"
+      candidate_vec = data[file_order.index(candidate_file)]
+      # print(candidate_vec)
+
+      dot = np.dot(query_vec, candidate_vec)
+      # norma = np.linalg.norm(query_vec)
+      # normb = np.linalg.norm(candidate_vec)
+      # cos = dot / (norma * normb)
+      distance = math.sqrt(sum([(a - b) ** 2 for a,b  in zip(query_vec, candidate_vec)]))
+      # result = 1 - spatial.distance.cosine(query_vec, candidate_vec)
+      ans.append((distance,candidate))
+
+
+    ans = sorted(ans)[0:t]
+    print(ans)
+    print("Total File Considered",len(candidates))
+    print("Total Buckets Searched",buckets_searched)
+    return ans
 
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-L", "--L", help="No. of Layers")
-parser.add_argument("-k", "--k", help="No. of hashes per layer")
-parser.add_argument("-t", "--t", help="# of Similar files required")
-parser.add_argument("-file", "--file", help="Query file")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-L", "--L", help="No. of Layers")
+    parser.add_argument("-k", "--k", help="No. of hashes per layer")
+    parser.add_argument("-t", "--t", help="# of Similar files required")
+    parser.add_argument("-file", "--file", help="Query file")
 
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-if args.k is None:
-    print("k for task 3 argument missing")
-    exit(0)
-k_from_args = int(args.k)
+    if args.k is None:
+        print("k for task 3 argument missing")
+        exit(0)
+    k_from_args = int(args.k)
 
-if args.L is None:
-    print("L for task 3 argument missing")
-    exit(0)
-l_from_args = int(args.L)
+    if args.L is None:
+        print("L for task 3 argument missing")
+        exit(0)
+    l_from_args = int(args.L)
 
-evaluate(l_from_args,k_from_args)
-
-
-if args.t is None:
-    print("t for task 3 argument missing")
-    exit(0)
-t_from_args = int(args.t)
+    # evaluate(l_from_args,k_from_args)
 
 
-if args.file is None:
-    print("file for task 3 argument missing")
-    exit(0)
-file_from_args = args.file.split(".")[0]
+    if args.t is None:
+        print("t for task 3 argument missing")
+        exit(0)
+    t_from_args = int(args.t)
+
+
+    if args.file is None:
+        print("file for task 3 argument missing")
+        exit(0)
+    file_from_args = args.file.split(".")[0]
 
 
 
-# evaluate()
-predict(file_from_args,t_from_args)
+    evaluate()
+    predict(file_from_args,t_from_args)

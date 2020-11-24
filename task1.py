@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from utils import page_rank
+
 similarity_matrix = pd.DataFrame.empty
 component_dict = {}
 gesture_subset = []
@@ -19,7 +21,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 def build_similarity_matrix():
     global similarity_matrix
-    similarity_matrix = pd.read_csv('dtw_similarity.csv', index_col=0, header=0)
+    similarity_matrix = pd.read_csv('SVD_50_similarity_matrix.csv', index_col=0, header=0)
     column_sums = similarity_matrix.sum(axis=1)
     new_index = []
     for ind in similarity_matrix.index.to_list():
@@ -46,30 +48,6 @@ def build_graph(k=3):
     if verbose:
         print("similarity matrix k-nearest neighbors graph")
         print(similarity_matrix)
-
-
-def page_rank(matrix, num_iterations: int = 100, d: float = 0.85):
-    matrix_numpy = matrix.to_numpy()
-
-    # Get size of values
-    array_size = matrix_numpy.shape[0]
-
-    # Initialize U
-    u = page_rank_seed_vector
-
-    # Loop until convergence or num_iterations
-    counter = 0
-    while counter < num_iterations:
-        u0 = ((1 - d) * matrix_numpy @ u) + (d * page_rank_seed_vector)
-        if np.array_equal(u, u0):
-            break
-        u = u0
-        counter += 1
-
-    #  U to sorted pandas series
-    u = pd.Series(u.flatten(), index=matrix.columns)
-    u = u.sort_values(ascending=False)
-    return u
 
 
 def find_dominant_gestures(page_rank_scores, m=6):
@@ -201,7 +179,7 @@ make_page_rank_seed_vector()
 build_component_dict()
 
 build_graph(k=k_from_args)
-page_rank_values = page_rank(similarity_matrix, 100, 0.85)
+page_rank_values = page_rank(similarity_matrix, page_rank_seed_vector, 100, 0.85)
 dominant_gestures = find_dominant_gestures(page_rank_values, m=m_from_args)
 print(dominant_gestures)
 plot_dominant_gestures(dominant_gestures=dominant_gestures)
