@@ -19,19 +19,27 @@ def get_modified_results_after_probabilistic_feedback(query_gesture_name: str,
                                                       irrelevant_results: List,
                                                       untagged_results: List):
     cleaned_relevant_result_names = [e.split('_')[0] for e in relevant_results]
+    cleaned_irrelevant_result_names = [e.split('_')[0] for e in irrelevant_results]
+    all_results = cleaned_relevant_result_names + cleaned_irrelevant_result_names
     bdf = _binarize(utils.get_gesture_vectors(GESTURE_VECTORS_FILE_PATH))
     # print(bdf)
     similarity_gesture_pairs = []
-    for relevant_gesture_name, relevant_gesture_vector in bdf.loc[relevant_results].iterrows():
-        similarity = sim(d=relevant_gesture_vector,
-                         relevant_results=cleaned_relevant_result_names,
-                         bdf=bdf)
-        similarity_gesture_pairs.append((similarity, relevant_gesture_name))
-    global NI_COUNTS
+    dissimilarity_gesture_pairs = []
+    global NI_COUNTS, RI_COUNTS
+    for gesture_name, gesture_vector in bdf.loc[all_results].iterrows():
+        similarity_to_relevant_gestures = sim(d=gesture_vector, relevant_results=cleaned_relevant_result_names, bdf=bdf)
+        similarity_gesture_pairs.append((similarity_to_relevant_gestures, gesture_name))
     NI_COUNTS = []  # Reset for re-running
-    global RI_COUNTS
     RI_COUNTS = []
-    similarity_gesture_pairs = list(set(similarity_gesture_pairs))  # Remove duplicates
+    for gesture_name, gesture_vector in bdf.loc[all_results].iterrows():
+        similarity_to_irrelevant_gestures = sim(d=gesture_vector, relevant_results=cleaned_irrelevant_result_names,
+                                                bdf=bdf)
+        dissimilarity_gesture_pairs.append((similarity_to_irrelevant_gestures, gesture_name))
+    NI_COUNTS = []
+    RI_COUNTS = []
+    final_similarity_gesture_pairs = [(sgp[0]-0.5*dgp[0], sgp[1]) for sgp,dgp in
+                                      zip(similarity_gesture_pairs, dissimilarity_gesture_pairs)]
+    similarity_gesture_pairs = list(set(final_similarity_gesture_pairs))  # Remove duplicates
     return sorted(similarity_gesture_pairs)
 
 
@@ -118,8 +126,8 @@ if __name__ == "__main__":
         # [str(x) for x in [250, 253, 258, 263, 265, 577, 582, 1]],
         # [str(x) for x in range(1, 10+1)] + ["1"]*1,
         # ["561"] * 10,
-        ["571", "572", "573", "574", "575", "576"] + ["570"] * 100,
-        [],
+        # ["571", "572", "573", "574", "575", "576"] + ["570"]*100, ["260", "261", "262"] + ["261"]*5,
+        ["571", "572", "573", "574", "575"]+["570"]*3+["574"]+["571"], ["572", "573"],
         []
     )
     print("Outputs:")
