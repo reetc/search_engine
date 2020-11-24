@@ -31,6 +31,7 @@ def get_modified_results_after_probabilistic_feedback(query_gesture_name: str,
     NI_COUNTS = []  # Reset for re-running
     global RI_COUNTS
     RI_COUNTS = []
+    similarity_gesture_pairs = list(set(similarity_gesture_pairs))  # Remove duplicates
     return sorted(similarity_gesture_pairs)
 
 
@@ -57,15 +58,26 @@ def _binarize_column(s: Series):
 
 
 def sim(d: list, relevant_results: List, bdf: DataFrame):
-    R = len(relevant_results)
     N = len(bdf)
+    R = len(relevant_results)
+    R = min(N, R)  # Preventing negative values for (N-R)
     n = count_of_objects_in_which_di_1(bdf)
     r = count_of_relevant_objects_in_which_di_1(relevant_results, bdf)
     sum_value = 0
     for i in range(len(bdf.columns)):
-        pi = (r[i] + 0.5) / (R + 1)
-        ui = (n[i] - r[i] + 0.5) / (N - R + 1)
-        sum_value += d[i] * log(pi*(1 - ui) / ui*(1 - pi))
+        # pi = (r[i] + 0.5) / (R + 1)
+        # ui = (n[i] - r[i] + 0.5) / (N - R + 1)
+        pi = (r[i] + n[i]/N) / (R + 1)
+        ui = (n[i] - r[i] + n[i]/N) / (N - R + 1)
+
+        # Making error corrections
+        pi = min(0.9999, pi)
+        ui = min(0.9999, ui)
+
+        num = pi*(1 - ui)
+        den = ui*(1 - pi)
+
+        sum_value += d[i] * log(num / den)
     return sum_value
 
 
@@ -83,15 +95,16 @@ def count_of_objects_in_which_di_1(df: DataFrame):
 
 
 def count_of_relevant_objects_in_which_di_1(relevant_results: List, df: DataFrame):
-    print(relevant_results)
+    # print(relevant_results)
     global RI_COUNTS
     if len(RI_COUNTS) != 0:
         return RI_COUNTS
     relevant_df = df.loc[relevant_results]
-    print(relevant_df)
+    # print(relevant_df)
     for column_name in df.columns:
         entries_with_1 = relevant_df[relevant_df[column_name] == 1]
         RI_COUNTS.append(len(entries_with_1))
+    RI_COUNTS = [ri if ri<=ni else ni for ni,ri in zip(NI_COUNTS,RI_COUNTS)]
     print("RI_COUNTS", RI_COUNTS)
     return RI_COUNTS
 
@@ -103,9 +116,9 @@ if __name__ == "__main__":
         # ["561", "562", "563", "563", "564", "565", "566", "567", "568", "560"],
         # [str(x) for x in range(559, 589+1)],
         # [str(x) for x in [250, 253, 258, 263, 265, 577, 582, 1]],
-        # [str(x) for x in range(1, 30 + 1)],
+        # [str(x) for x in range(1, 10+1)] + ["1"]*1,
         # ["561"] * 10,
-        ["571", "572", "573", "574", "575", "576", "570", "570", "570", "570", "570", "570", "570", "570", "570", "570", "570"],
+        ["571", "572", "573", "574", "575", "576"] + ["570"] * 100,
         [],
         []
     )
