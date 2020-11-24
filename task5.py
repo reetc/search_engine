@@ -102,11 +102,26 @@ def modifypagerankvector(page_rank_seed_vector,relavant,irrelavant,untouched):
     return page_rank_seed_vector
 
 
-def get_modified_results_after_ppr(query_gesture_name: str, relevant_results: List, irrelevant_results: List, untagged_results: List,
-                                                      gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH,
-                                   similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH, numberOfResults = 10):
+def build_graph(similarity_matrix,connected_nodes=1023):
+    # Keep only k most similar gestures
+    # global similarity_matrix
+    similarity_matrix = pd.DataFrame(
+        np.where(similarity_matrix.rank(axis=0, method='min', ascending=False) > connected_nodes, 0, similarity_matrix),
+        columns=similarity_matrix.columns, index=similarity_matrix.index)
+    return similarity_matrix
+
+
+def get_modified_results_after_ppr(query_gesture_name: str,
+                                   relevant_results: List,
+                                   irrelevant_results: List,
+                                   untagged_results: List,
+                                   gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH,
+                                   similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH,
+                                   numberOfResults = 10,
+                                   connected_nodes=1023):
     initComponentMatrix(gesture_vectors_file_path)
     similarity_matrix = get_similarity_matrix(similarity_matrix_path,query_gesture_name)
+    similarity_matrix = build_graph(similarity_matrix,connected_nodes)
     page_rank_seed_vector = initialSeedMatrix()
     page_rank_seed_vector = modifypagerankvector(page_rank_seed_vector, relevant_results,
                                                  irrelevant_results, untagged_results)
@@ -123,6 +138,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-q", "--query", help="list of relevant gestures, e.g. --query=570")
     parser.add_argument("-t", "--numRes", help="list of relevant information results")
+    parser.add_argument("-k", "--connections", help="no of nodes each node is connected to")
     parser.add_argument("-r", "--relevant", help="list of relevant gestures, e.g. --relevant=570,570,571,574,575")
     parser.add_argument("-i", "--irrelevant", help="list of irrelevant gestures, e.g. --irrelevant=572,573")
     args = parser.parse_args()
@@ -148,13 +164,20 @@ if __name__ == "__main__":
     else:
         numberOfResults = int(args.numRes)
 
+    if args.connections is None:
+        print("-k or number of nodes to connect is missing; using default as 1023")
+        connections = 1023
+    else:
+        connections = int(args.connections)
+
     new_suggestions = get_modified_results_after_ppr(query_gesture_name=query,
                                                      relevant_results=relevant,
                                                      irrelevant_results=irrelevant,
                                                      untagged_results=[],
                                                      gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH,
                                                      similarity_matrix_path = SIMILARITY_MATRIX_FILE_PATH,
-                                                     numberOfResults = numberOfResults)
+                                                     numberOfResults = numberOfResults,
+                                                     connected_nodes=connections)
 
     print(new_suggestions)
 
