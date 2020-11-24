@@ -76,26 +76,28 @@ def get_similarity_matrix(similarity_matrix_path,initialQuery):
 def getResult(pagerank, m=10):
     return pagerank[:m]
 
-def modifypagerankvector(page_rank_seed_vector,relavant,irrelavant,untouched):
+def modifypagerankvector(page_rank_seed_vector,relavant=[],irrelavant=[],untouched=[]):
     global componentMatrix
-    for rel in relavant:
-        componentsList = componentMatrix.loc[rel]
-        toAdd = 0
-        denominator = 0
-        for val in componentsList:
-            toAdd = toAdd + val
-            denominator =denominator + val**2
-        page_rank_seed_vector.loc[rel] = page_rank_seed_vector.loc[rel] + (toAdd / sqrt(denominator))
-        page_rank_seed_vector.loc[rel] = page_rank_seed_vector.loc[rel] / len(relavant)
-    for irrel in irrelavant:
-        componentsList = componentMatrix.loc[irrel]
-        toSub = 0
-        denominator = 0
-        for val in componentsList:
-            toSub = toSub + abs(val)
-            denominator =denominator + val**2
-        page_rank_seed_vector.loc[irrel] = page_rank_seed_vector.loc[irrel] - (toSub / sqrt(denominator))
-        page_rank_seed_vector.loc[irrel] = page_rank_seed_vector.loc[irrel] / len(irrelavant)
+    if relavant:
+        for rel in relavant:
+            componentsList = componentMatrix.loc[rel]
+            toAdd = 0
+            denominator = 0
+            for val in componentsList:
+                toAdd = toAdd + val
+                denominator =denominator + val**2
+            page_rank_seed_vector.loc[rel] = page_rank_seed_vector.loc[rel] + (toAdd / sqrt(denominator))
+            page_rank_seed_vector.loc[rel] = page_rank_seed_vector.loc[rel] / len(relavant)
+    if irrelavant:
+        for irrel in irrelavant:
+            componentsList = componentMatrix.loc[irrel]
+            toSub = 0
+            denominator = 0
+            for val in componentsList:
+                toSub = toSub + abs(val)
+                denominator =denominator + val**2
+            page_rank_seed_vector.loc[irrel] = page_rank_seed_vector.loc[irrel] - (toSub / sqrt(denominator))
+            page_rank_seed_vector.loc[irrel] = page_rank_seed_vector.loc[irrel] / len(irrelavant)
     # print("pagerankseed vector",page_rank_seed_vector)
     # print(page_rank_seed_vector)
     # page_rank_seed_vector.to_csv("seedVector.csv")
@@ -151,12 +153,18 @@ if __name__ == "__main__":
     if args.relevant is None:
         print("-r or --relevant argument missing")
         exit(0)
-    relevant = args.relevant.split(',')
+    elif args.relevant == "":
+        relevant = []
+    else:
+        relevant = args.relevant.split(',')
 
     if args.irrelevant is None:
         print("-i or --irrelevant argument missing")
         exit(0)
-    irrelevant = args.irrelevant.split(',')
+    elif args.irrelevant == "":
+        irrelevant = []
+    else :
+        irrelevant = args.irrelevant.split(',')
 
     if args.numRes is None:
         print("-t or number of results missing; using default as 10")
