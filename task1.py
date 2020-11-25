@@ -179,7 +179,7 @@ make_page_rank_seed_vector()
 build_component_dict()
 
 build_graph(k=k_from_args)
-page_rank_values = page_rank(similarity_matrix, page_rank_seed_vector, 100, 0.85)
+page_rank_values = page_rank(similarity_matrix, page_rank_seed_vector, 1000, 0.85)
 dominant_gestures = find_dominant_gestures(page_rank_values, m=m_from_args)
 print(dominant_gestures)
 plot_dominant_gestures(dominant_gestures=dominant_gestures)
