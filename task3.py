@@ -196,7 +196,11 @@ def predict(file_num=278,t=15):
       similarity_mat[query_num].append((distance,candidate))
 
     results = sorted(similarity_mat[query_num])[0:t]
-    print(results)
+    # print(results)
+    print("Gesture","Distance")
+    for el in results:
+        print(el[1],"\t",el[0])
+
     print("Total File Considered",len(candidates))
     print("Total Buckets Searched",buckets_searched)
     return results
