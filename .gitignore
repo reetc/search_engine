@@ -134,3 +134,6 @@ dmypy.json
 
 # Pycharm user preferences
 .idea/
+
+# Some binary files
+lsh_model

@@ -144,7 +144,7 @@ if __name__ == "__main__":
         query_gesture_name=query,
         relevant_results=relevant,
         irrelevant_results=irrelevant,
-        all_results=[],
+        all_results=relevant+irrelevant,
         gesture_vectors_file_path=GESTURE_VECTORS_FILE_PATH
     )
 
