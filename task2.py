@@ -354,8 +354,13 @@ elif c_from_args == '2':
 elif c_from_args == '3':
     found_labels = decision_tree_classifier('tfidf')
 
-for found_label in found_labels:
-    print(found_label)
+with open('outputs_for_report/task2_{}_outputs.txt'.format(c_from_args), 'w') as filehandle:
+    # for listitem in places:
+    #     filehandle.write('%s\n' % listitem)
+    for found_label in found_labels:
+        filehandle.write('%s\n' % str(found_label))
+        print(found_label)
+
 
 accuracy = find_accuracy(found_labels)
 print(accuracy)
