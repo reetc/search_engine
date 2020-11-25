@@ -96,7 +96,7 @@ def find_training_label(gesture_name):
 
 def find_real_label(gesture_name):
     for labeled_datum in all_labeled_data:
-        if labeled_datum[0] == str(gesture_name):
+        if labeled_datum[0] == str(gesture_name) or labeled_datum[0] == str(gesture_name).split('-')[0]:
             return labeled_datum[1]
 
 
@@ -352,7 +352,7 @@ if c_from_args == '1':
 elif c_from_args == '2':
     found_labels = page_rank_classifier()
 elif c_from_args == '3':
-    found_labels = decision_tree_classifier('tf')
+    found_labels = decision_tree_classifier('tfidf')
 
 for found_label in found_labels:
     print(found_label)
