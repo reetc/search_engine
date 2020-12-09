@@ -83,7 +83,7 @@ class LSH:
 
 ## Generate buckets
 
-def train(l=8,k=4):
+def train(l,k):
 
     lsh = LSH(L=l,k=k,inp_dimensions=50)
     data,file_order = import_data()
@@ -96,7 +96,7 @@ def train(l=8,k=4):
 
 
 ## Train, Evaluate and Store LSH model
-def evaluate(l=8,k=4):
+def evaluate(l,k):
     dic = {}
     dic[0] = (0,31)
     dic[1] = (249,279)
@@ -255,7 +255,7 @@ def predict_custom(vec,t=15):
 
 
 hashing_done = False
-def get_similar_gestures(file_number, l=8, k=4, t=11):
+def get_similar_gestures(file_number, l, k, t=11):
     global hashing_done
     if not hashing_done:
         evaluate(l, k)
@@ -300,5 +300,5 @@ if __name__ == "__main__":
 
 
 
-    evaluate()
+    evaluate(l_from_args,k_from_args)
     predict(file_from_args,t_from_args)
