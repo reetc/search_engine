@@ -1,93 +1,187 @@
-﻿1,vattene
-2,vattene
-3,vattene
-4,vattene
-5,vattene
-6,vattene
-7,vattene
-8,vattene
-9,vattene
-10,vattene
-11,vattene
-12,vattene
-13,vattene
-14,vattene
-15,vattene
-16,vattene
-17,vattene
-18,vattene
-19,vattene
-20,vattene
-21,vattene
-22,vattene
-23,vattene
-24,vattene
-25,vattene
-26,vattene
-27,vattene
-28,vattene
-29,vattene
-30,vattene
-31,vattene
-249,combinato
-250,combinato
-251,combinato
-252,combinato
-253,combinato
-254,combinato
-255,combinato
-256,combinato
-257,combinato
-258,combinato
-259,combinato
-260,combinato
-261,combinato
-262,combinato
-263,combinato
-264,combinato
-265,combinato
-266,combinato
-267,combinato
-268,combinato
-269,combinato
-270,combinato
-271,combinato
-272,combinato
-273,combinato
-274,combinato
-275,combinato
-276,combinato
-277,combinato
-278,combinato
-279,combinato
-559,daccordo
-560,daccordo
-561,daccordo
-562,daccordo
-563,daccordo
-564,daccordo
-565,daccordo
-566,daccordo
-567,daccordo
-568,daccordo
-569,daccordo
-570,daccordo
-571,daccordo
-572,daccordo
-573,daccordo
-574,daccordo
-575,daccordo
-576,daccordo
-577,daccordo
-578,daccordo
-579,daccordo
-580,daccordo
-581,daccordo
-582,daccordo
-583,daccordo
-584,daccordo
-585,daccordo
-586,daccordo
-587,daccordo
-588,daccordo
-589,daccordo
+﻿Filename,Class name
+32,Vieni Qui
+33,Vieni Qui
+34,Vieni Qui
+35,Vieni Qui
+36,Vieni Qui
+37,Vieni Qui
+38,Vieni Qui
+39,Vieni Qui
+40,Vieni Qui
+41,Vieni Qui
+42,Vieni Qui
+43,Vieni Qui
+44,Vieni Qui
+45,Vieni Qui
+46,Vieni Qui
+47,Vieni Qui
+48,Vieni Qui
+49,Vieni Qui
+50,Vieni Qui
+51,Vieni Qui
+52,Vieni Qui
+53,Vieni Qui
+54,Vieni Qui
+55,Vieni Qui
+56,Vieni Qui
+57,Vieni Qui
+58,Vieni Qui
+59,Vieni Qui
+60,Vieni Qui
+61,Vieni Qui
+62,Vieni Qui
+63,Perfetto
+64,Perfetto
+65,Perfetto
+66,Perfetto
+67,Perfetto
+68,Perfetto
+69,Perfetto
+70,Perfetto
+71,Perfetto
+72,Perfetto
+73,Perfetto
+74,Perfetto
+75,Perfetto
+76,Perfetto
+77,Perfetto
+78,Perfetto
+79,Perfetto
+80,Perfetto
+81,Perfetto
+82,Perfetto
+83,Perfetto
+84,Perfetto
+85,Perfetto
+86,Perfetto
+87,Perfetto
+88,Perfetto
+89,Perfetto
+90,Perfetto
+91,Perfetto
+92,Perfetto
+93,Perfetto
+156,Che vuoi
+157,Che vuoi
+158,Che vuoi
+159,Che vuoi
+160,Che vuoi
+161,Che vuoi
+162,Che vuoi
+163,Che vuoi
+164,Che vuoi
+165,Che vuoi
+166,Che vuoi
+167,Che vuoi
+168,Che vuoi
+169,Che vuoi
+170,Che vuoi
+171,Che vuoi
+172,Che vuoi
+173,Che vuoi
+174,Che vuoi
+175,Che vuoi
+176,Che vuoi
+177,Che vuoi
+178,Che vuoi
+179,Che vuoi
+180,Che vuoi
+181,Che vuoi
+182,Che vuoi
+183,Che vuoi
+184,Che vuoi
+185,Che vuoi
+186,Che vuoi
+187,Vanno d' accordo
+188,Vanno d' accordo
+189,Vanno d' accordo
+190,Vanno d' accordo
+191,Vanno d' accordo
+192,Vanno d' accordo
+193,Vanno d' accordo
+194,Vanno d' accordo
+195,Vanno d' accordo
+196,Vanno d' accordo
+197,Vanno d' accordo
+198,Vanno d' accordo
+199,Vanno d' accordo
+200,Vanno d' accordo
+201,Vanno d' accordo
+202,Vanno d' accordo
+203,Vanno d' accordo
+204,Vanno d' accordo
+205,Vanno d' accordo
+206,Vanno d' accordo
+207,Vanno d' accordo
+208,Vanno d' accordo
+209,Vanno d' accordo
+210,Vanno d' accordo
+211,Vanno d' accordo
+212,Vanno d' accordo
+213,Vanno d' accordo
+214,Vanno d' accordo
+215,Vanno d' accordo
+216,Vanno d' accordo
+217,Vanno d' accordo
+590,Sono stufo
+591,Sono stufo
+592,Sono stufo
+593,Sono stufo
+594,Sono stufo
+595,Sono stufo
+596,Sono stufo
+597,Sono stufo
+598,Sono stufo
+599,Sono stufo
+600,Sono stufo
+601,Sono stufo
+602,Sono stufo
+603,Sono stufo
+604,Sono stufo
+605,Sono stufo
+606,Sono stufo
+607,Sono stufo
+608,Sono stufo
+609,Sono stufo
+610,Sono stufo
+611,Sono stufo
+612,Sono stufo
+613,Sono stufo
+614,Sono stufo
+615,Sono stufo
+616,Sono stufo
+617,Sono stufo
+618,Sono stufo
+619,Sono stufo
+620,Sono stufo
+621,Artificial
+622,Artificial
+623,Artificial
+624,Artificial
+625,Artificial
+626,Artificial
+627,Artificial
+628,Artificial
+629,Artificial
+630,Artificial
+631,Artificial
+632,Artificial
+633,Artificial
+634,Artificial
+635,Artificial
+636,Artificial
+637,Artificial
+638,Artificial
+639,Artificial
+640,Artificial
+641,Artificial
+642,Artificial
+643,Artificial
+644,Artificial
+645,Artificial
+646,Artificial
+647,Artificial
+648,Artificial
+649,Artificial
+650,Artificial
+651,Artificial
